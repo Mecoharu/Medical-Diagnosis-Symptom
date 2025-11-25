@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Intelligent Medical Diagnosis System</title>
+    <title>Intelligent Medical & Mental Health Diagnosis System</title>
     <style>
         :root {
             --primary: #2c3e50;
             --accent: #3498db;
+            --mental: #9b59b6;
             --light: #ecf0f1;
         }
         body {
@@ -106,16 +107,77 @@
             font-weight: bold;
             color: #27ae60;
         }
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #ddd;
+        }
+        .tab {
+            padding: 12px 30px;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            font-size: 16px;
+            color: #666;
+            transition: all 0.3s;
+            width: auto;
+        }
+        .tab:hover {
+            color: var(--primary);
+            background: #f5f5f5;
+        }
+        .tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--accent);
+            font-weight: bold;
+        }
+        .tab.mental.active {
+            color: var(--mental);
+            border-bottom-color: var(--mental);
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .mental-diagnosis-card {
+            background: white;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 5px solid var(--mental);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .severity-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 0.85em;
+            margin-left: 10px;
+        }
+        .severity-mild { background: #d4edda; color: #155724; }
+        .severity-moderate { background: #fff3cd; color: #856404; }
+        .severity-severe { background: #f8d7da; color: #721c24; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>Medical Diagnosis System</h1>
+    <h1>Comprehensive Health Diagnosis System</h1>
     <p class="intro-text">
-        Based on Rule-Based Reasoning (RBR) with Certainty Factors<br>
-        <small>Project Reference: Intelligent Symptom-Based System [cite: 9, 50]</small>
+        Physical & Mental Health Assessment using Rule-Based Reasoning with Certainty Factors<br>
+        <small>Project Reference: Intelligent Symptom-Based Knowledge System </small>
     </p>
+
+    <div class="tabs">
+        <button class="tab active" onclick="switchTab('physical')">🩺 Physical Health</button>
+        <button class="tab mental" onclick="switchTab('mental')">🧠 Mental Health</button>
+    </div>
+
+    <!-- PHYSICAL HEALTH TAB -->
+    <div id="physical-tab" class="tab-content active">
 
     <form id="diagnosisForm">
         <div class="form-section">
@@ -123,9 +185,9 @@
             
             <label for="age">Age (Years)</label>
             <input type="number" id="age" placeholder="e.g., 25" required min="0" max="120">
-            <p style="font-size: 0.8em; color: #666;">*Age will be categorized (Child, Adult, Senior) automatically[cite: 65].</p>
+            <p style="font-size: 0.8em; color: #666;">*Age will be categorized (Child, Adult, Senior)</p>
 
-            <label for="gender">Gender [cite: 26]</label>
+            <label for="gender">Gender </label>
             <select id="gender">
                 <option value="Male">Male</option>
                 <option value="Female">Female</option>
@@ -133,14 +195,14 @@
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 15px;">
                 <div>
-                    <label for="bp">Blood Pressure [cite: 27]</label>
+                    <label for="bp">Blood Pressure </label>
                     <select id="bp">
                         <option value="Normal">Normal</option>
                         <option value="High">High</option>
                     </select>
                 </div>
                 <div>
-                    <label for="cholesterol">Cholesterol Level [cite: 30]</label>
+                    <label for="cholesterol">Cholesterol Level </label>
                     <select id="cholesterol">
                         <option value="Normal">Normal</option>
                         <option value="High">High</option>
@@ -155,37 +217,143 @@
             <div class="checkbox-group">
                 <div class="checkbox-item">
                     <input type="checkbox" id="fever" value="Yes">
-                    <label for="fever" style="margin:0">Fever [cite: 21]</label>
+                    <label for="fever" style="margin:0">Fever </label>
                 </div>
                 <div class="checkbox-item">
                     <input type="checkbox" id="cough" value="Yes">
-                    <label for="cough" style="margin:0">Cough [cite: 22]</label>
+                    <label for="cough" style="margin:0">Cough </label>
                 </div>
                 <div class="checkbox-item">
                     <input type="checkbox" id="fatigue" value="Yes">
-                    <label for="fatigue" style="margin:0">Fatigue [cite: 23]</label>
+                    <label for="fatigue" style="margin:0">Fatigue</label>
                 </div>
                 <div class="checkbox-item">
                     <input type="checkbox" id="breathing" value="Yes">
-                    <label for="breathing" style="margin:0">Diff. Breathing [cite: 31]</label>
+                    <label for="breathing" style="margin:0">Diff. Breathing </label>
                 </div>
             </div>
         </div>
 
-        <button type="button" onclick="runInference()">Diagnose</button>
+        <button type="button" onclick="runInference()">Diagnose Physical Health</button>
     </form>
 
     <div id="result-area">
-        <h2>Diagnosis Results</h2>
+        <h2>Physical Diagnosis Results</h2>
         <p>Sorted by Certainty Factor (CF)[cite: 123]:</p>
         <div id="results-list"></div>
     </div>
+    </div>
+
+    <!-- MENTAL HEALTH TAB -->
+    <div id="mental-tab" class="tab-content">
+    <form id="mentalDiagnosisForm">
+        <div class="form-section">
+            <h3>Patient Profile</h3>
+            
+            <label for="mental-age">Age (Years)</label>
+            <input type="number" id="mental-age" placeholder="e.g., 25" required min="0" max="120">
+
+            <label for="mental-gender">Gender</label>
+            <select id="mental-gender">
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+            </select>
+        </div>
+
+        <div class="form-section">
+            <h3>Behavioral & Emotional Symptoms</h3>
+            <p>Select all symptoms that are present:</p>
+            <div class="checkbox-group">
+                <div class="checkbox-item">
+                    <input type="checkbox" id="sadness" value="Yes">
+                    <label for="sadness" style="margin:0">Sadness</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="euphoric" value="Yes">
+                    <label for="euphoric" style="margin:0">Euphoric</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="exhausted" value="Yes">
+                    <label for="exhausted" style="margin:0">Exhausted</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="sleep-dissorder" value="Yes">
+                    <label for="sleep-dissorder" style="margin:0">Sleep Disorder</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="mood-swing" value="Yes">
+                    <label for="mood-swing" style="margin:0">Mood Swings</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="suicidal-thoughts" value="Yes">
+                    <label for="suicidal-thoughts" style="margin:0">Suicidal Thoughts</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="anorxia" value="Yes">
+                    <label for="anorxia" style="margin:0">Anorexia</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="authority-respect" value="Yes">
+                    <label for="authority-respect" style="margin:0">Authority Respect Issues</label>
+                </div>
+                
+                <div class="checkbox-item">
+                    <input type="checkbox" id="aggressive-response" value="Yes">
+                    <label for="aggressive-response" style="margin:0">Aggressive Response</label>
+                </div>
+               
+                <div class="checkbox-item">
+                    <input type="checkbox" id="nervous-break-down" value="Yes">
+                    <label for="nervous-break-down" style="margin:0">Nervous Breakdown</label>
+                </div>
+                
+                <div class="checkbox-item">
+                    <input type="checkbox" id="overthinking" value="Yes">
+                    <label for="overthinking" style="margin:0">Overthinking</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="sexual-activity" value="Yes">
+                    <label for="sexual-activity" style="margin:0">Sexual Activity Changes</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="concentration" value="Yes">
+                    <label for="concentration" style="margin:0">Concentration Issues</label>
+                </div>
+  
+            </div>
+        </div>
+
+        <button type="button" onclick="runMentalInference()">Diagnose Mental Health</button>
+    </form>
+
+    <div id="mental-result-area" style="display:none; margin-top:30px; padding:20px; background-color:#f3e5f5; border:1px solid #ce93d8; border-radius:5px;">
+        <h2>Mental Health Assessment Results</h2>
+        <p>Sorted by Certainty Factor (CF):</p>
+        <div id="mental-results-list"></div>
+    </div>
+    </div>
+
 </div>
 
 <script>
+    // ============= TAB SWITCHING =============
+    function switchTab(tab) {
+        // Hide all tabs
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        
+        // Show selected tab
+        if (tab === 'physical') {
+            document.getElementById('physical-tab').classList.add('active');
+            document.querySelectorAll('.tab')[0].classList.add('active');
+        } else {
+            document.getElementById('mental-tab').classList.add('active');
+            document.querySelectorAll('.tab')[1].classList.add('active');
+        }
+    }
+
+    // ============= PHYSICAL HEALTH DIAGNOSIS =============
     // --- PHASE 1 SIMULATION: KNOWLEDGE BASE ---
-    // In a real system, this is generated offline from the Kaggle dataset[cite: 52].
-    // Here we use hardcoded rules to simulate the structure described in[cite: 89].
     const knowledgeBase = [
         {
             ruleId: 1,
@@ -196,15 +364,15 @@
         {
             ruleId: 2,
             hypothesis: "Common Cold",
-            evidence: { "Cough": "Yes", "Fever": "No" }, 
+            evidence: { "Cough": "Yes", "Fever": "No" }, // Example logic
             cf: 0.6
         },
         {
             ruleId: 3,
             hypothesis: "Pneumonia",
             evidence: { "Difficulty Breathing": "Yes", "AgeCategory": "Senior", "Blood Pressure": "High" },
-            cf: 0.9 // Specific example rule style from PDF [cite: 81]
-        },
+            cf: 0.9 
+        }, // Added closing brace for ruleId 3
         {
             ruleId: 4,
             hypothesis: "Bronchitis",
@@ -218,7 +386,6 @@
             cf: 0.85
         }
     ];
-
 
     // --- PHASE 2: INFERENCE ENGINE LOGIC  ---
 
@@ -269,7 +436,7 @@
 
         knowledgeBase.forEach(rule => {
             let match = true;
-            
+            // Check if all evidence in the rule matches user input
             for (let [feature, value] of Object.entries(rule.evidence)) {
                 if (userFacts[feature] !== value) {
                     match = false;
@@ -293,7 +460,7 @@
         }
 
         // 4. Sort and Display Output [cite: 123]
-        finalResults.sort((a, b) => b.cf - a.cf);
+        finalResults.sort((a, b) => b.cf - a.cf); 
 
         const resultsContainer = document.getElementById('results-list');
         resultsContainer.innerHTML = "";
@@ -309,6 +476,236 @@
                     <strong>${res.disease}</strong>
                     <span class="cf-score">Certainty: ${(res.cf * 100).toFixed(0)}% (CF: ${res.cf})</span>
                     <br><small>Based on matching symptom rules</small>
+                `;
+                resultsContainer.appendChild(div);
+            });
+        }
+    }
+
+    // ============= MENTAL HEALTH DIAGNOSIS =============
+    // Based on Mental Disorder Classification dataset patterns
+    
+    const mentalKnowledgeBase = [
+        {
+            ruleId: 101,
+            hypothesis: "Major Depressive Disorder",
+            evidence: { 
+                "Sadness": "Yes", 
+                "Exhausted": "Yes", 
+                "Sleep Disorder": "Yes",
+                "Suicidal Thoughts": "Yes"
+            },
+            cf: 0.9,
+            severity: "severe"
+        },
+        {
+            ruleId: 102,
+            hypothesis: "Major Depressive Disorder",
+            evidence: { 
+                "Sadness": "Yes", 
+                "Exhausted": "Yes", 
+                "Concentration": "Yes"
+            },
+            cf: 0.75,
+            severity: "moderate"
+        },
+        {
+            ruleId: 103,
+            hypothesis: "Bipolar Disorder",
+            evidence: { 
+                "Mood Swings": "Yes", 
+                "Euphoric": "Yes", 
+                "Sleep Disorder": "Yes",
+                "Aggressive Response": "Yes"
+            },
+            cf: 0.85,
+            severity: "severe"
+        },
+        {
+            ruleId: 104,
+            hypothesis: "Bipolar Disorder",
+            evidence: { 
+                "Mood Swings": "Yes", 
+                "Euphoric": "Yes"
+            },
+            cf: 0.7,
+            severity: "moderate"
+        },
+        {
+            ruleId: 105,
+            hypothesis: "Generalized Anxiety Disorder",
+            evidence: { 
+                "Overthinking": "Yes", 
+                "Nervous Breakdown": "Yes", 
+                "Sleep Disorder": "Yes"
+            },
+            cf: 0.8,
+            severity: "moderate"
+        },
+        {
+            ruleId: 106,
+            hypothesis: "Generalized Anxiety Disorder",
+            evidence: { 
+                "Overthinking": "Yes", 
+                "Concentration": "Yes",
+                "Exhausted": "Yes"
+            },
+            cf: 0.75,
+            severity: "moderate"
+        },
+        {
+            ruleId: 107,
+            hypothesis: "Eating Disorder",
+            evidence: { 
+                "Anorexia": "Yes", 
+                "Mood Swings": "Yes",
+                "Exhausted": "Yes"
+            },
+            cf: 0.85,
+            severity: "severe"
+        },
+        {
+            ruleId: 108,
+            hypothesis: "Oppositional Defiant Disorder",
+            evidence: { 
+                "Authority Respect": "Yes", 
+                "Aggressive Response": "Yes",
+                "Admit Mistakes": "No"
+            },
+            cf: 0.8,
+            severity: "moderate"
+        },
+        {
+            ruleId: 109,
+            hypothesis: "Post-Traumatic Stress Disorder",
+            evidence: { 
+                "Nervous Breakdown": "Yes", 
+                "Sleep Disorder": "Yes",
+                "Aggressive Response": "Yes",
+                "Concentration": "Yes"
+            },
+            cf: 0.82,
+            severity: "severe"
+        },
+        {
+            ruleId: 110,
+            hypothesis: "Adjustment Disorder",
+            evidence: { 
+                "Sadness": "Yes", 
+                "Ignore & Move On": "Yes",
+                "Concentration": "Yes"
+            },
+            cf: 0.65,
+            severity: "mild"
+        },
+        {
+            ruleId: 111,
+            hypothesis: "Mild Depression",
+            evidence: { 
+                "Sadness": "Yes", 
+                "Exhausted": "Yes"
+            },
+            cf: 0.6,
+            severity: "mild"
+        },
+        {
+            ruleId: 112,
+            hypothesis: "Manic Episode",
+            evidence: { 
+                "Euphoric": "Yes", 
+                "Sexual Activity": "Yes",
+                "Sleep Disorder": "Yes"
+            },
+            cf: 0.8,
+            severity: "severe"
+        }
+    ];
+
+    function runMentalInference() {
+        // 1. Gather User Input
+        const ageInput = parseInt(document.getElementById('mental-age').value);
+        if (isNaN(ageInput)) {
+            alert("Please enter a valid age.");
+            return;
+        }
+
+        const mentalFacts = {
+            "AgeCategory": getAgeCategory(ageInput),
+            "Gender": document.getElementById('mental-gender').value,
+            "Sadness": document.getElementById('sadness').checked ? "Yes" : "No",
+            "Euphoric": document.getElementById('euphoric').checked ? "Yes" : "No",
+            "Exhausted": document.getElementById('exhausted').checked ? "Yes" : "No",
+            "Sleep Disorder": document.getElementById('sleep-dissorder').checked ? "Yes" : "No",
+            "Mood Swings": document.getElementById('mood-swing').checked ? "Yes" : "No",
+            "Suicidal Thoughts": document.getElementById('suicidal-thoughts').checked ? "Yes" : "No",
+            "Anorexia": document.getElementById('anorxia').checked ? "Yes" : "No",
+            "Authority Respect": document.getElementById('authority-respect').checked ? "Yes" : "No",
+            "Aggressive Response": document.getElementById('aggressive-response').checked ? "Yes" : "No",
+            "Nervous Breakdown": document.getElementById('nervous-break-down').checked ? "Yes" : "No",
+            "Overthinking": document.getElementById('overthinking').checked ? "Yes" : "No",
+            "Sexual Activity": document.getElementById('sexual-activity').checked ? "Yes" : "No",
+            "Concentration": document.getElementById('concentration').checked ? "Yes" : "No",
+       
+        };
+
+        // 2. Forward Chaining
+        let diseaseCFs = {};
+        let diseaseSeverity = {};
+
+        mentalKnowledgeBase.forEach(rule => {
+            let match = true;
+            for (let [feature, value] of Object.entries(rule.evidence)) {
+                if (mentalFacts[feature] !== value) {
+                    match = false;
+                    break;
+                }
+            }
+
+            if (match) {
+                if (!diseaseCFs[rule.hypothesis]) {
+                    diseaseCFs[rule.hypothesis] = [];
+                    diseaseSeverity[rule.hypothesis] = rule.severity;
+                }
+                diseaseCFs[rule.hypothesis].push(rule.cf);
+            }
+        });
+
+        // 3. Calculate Final CF per Disorder
+        let finalResults = [];
+        for (let [disorder, cfList] of Object.entries(diseaseCFs)) {
+            let netCF = combineCF(cfList);
+            finalResults.push({ 
+                disorder: disorder, 
+                cf: netCF,
+                severity: diseaseSeverity[disorder]
+            });
+        }
+
+        // 4. Sort and Display
+        finalResults.sort((a, b) => b.cf - a.cf);
+
+        const resultsContainer = document.getElementById('mental-results-list');
+        resultsContainer.innerHTML = "";
+        document.getElementById('mental-result-area').style.display = 'block';
+
+        if (finalResults.length === 0) {
+            resultsContainer.innerHTML = "<p>No specific mental health condition matched the symptoms in the Knowledge Base. This is a positive indication, but please consult a mental health professional if you have concerns.</p>";
+        } else {
+            resultsContainer.innerHTML += `
+                <div style="background: #fff9c4; padding: 15px; border-radius: 5px; margin-bottom: 15px; border-left: 4px solid #fbc02d;">
+                    <strong>⚠️ Important Notice:</strong> This is a screening tool only. Please consult a licensed mental health professional for proper diagnosis and treatment.
+                </div>
+            `;
+            
+            finalResults.forEach(res => {
+                const div = document.createElement('div');
+                div.className = 'mental-diagnosis-card';
+                const severityClass = `severity-${res.severity}`;
+                div.innerHTML = `
+                    <strong>${res.disorder}</strong>
+                    <span class="severity-badge ${severityClass}">${res.severity.toUpperCase()}</span>
+                    <span class="cf-score" style="color: var(--mental);">Certainty: ${(res.cf * 100).toFixed(0)}% (CF: ${res.cf})</span>
+                    <br><small>Based on matching behavioral symptom patterns</small>
                 `;
                 resultsContainer.appendChild(div);
             });
