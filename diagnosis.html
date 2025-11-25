@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intelligent Medical Diagnosis System</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #3498db;
+            --light: #ecf0f1;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light);
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: var(--primary);
+            text-align: center;
+            border-bottom: 2px solid var(--accent);
+            padding-bottom: 10px;
+        }
+        .intro-text {
+            text-align: center;
+            font-style: italic;
+            color: #666;
+            margin-bottom: 30px;
+        }
+        .form-section {
+            margin-bottom: 25px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 5px;
+            border-left: 5px solid var(--accent);
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        select, input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box; 
+        }
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .checkbox-item {
+            background: white;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+        }
+        .checkbox-item input {
+            margin-right: 10px;
+        }
+        button {
+            width: 100%;
+            padding: 15px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background-color: var(--accent);
+        }
+        #result-area {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #e8f6f3;
+            border: 1px solid #a3e4d7;
+            border-radius: 5px;
+            display: none;
+        }
+        .diagnosis-card {
+            background: white;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 5px solid #27ae60;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .cf-score {
+            float: right;
+            font-weight: bold;
+            color: #27ae60;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Medical Diagnosis System</h1>
+    <p class="intro-text">
+        Based on Rule-Based Reasoning (RBR) with Certainty Factors<br>
+        <small>Project Reference: Intelligent Symptom-Based System [cite: 9, 50]</small>
+    </p>
+
+    <form id="diagnosisForm">
+        <div class="form-section">
+            <h3>Patient Profile</h3>
+            
+            <label for="age">Age (Years)</label>
+            <input type="number" id="age" placeholder="e.g., 25" required min="0" max="120">
+            <p style="font-size: 0.8em; color: #666;">*Age will be categorized (Child, Adult, Senior) automatically[cite: 65].</p>
+
+            <label for="gender">Gender [cite: 26]</label>
+            <select id="gender">
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+            </select>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 15px;">
+                <div>
+                    <label for="bp">Blood Pressure [cite: 27]</label>
+                    <select id="bp">
+                        <option value="Normal">Normal</option>
+                        <option value="High">High</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="cholesterol">Cholesterol Level [cite: 30]</label>
+                    <select id="cholesterol">
+                        <option value="Normal">Normal</option>
+                        <option value="High">High</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h3>Symptoms</h3>
+            <p>Select all symptoms that are present (Positive):</p>
+            <div class="checkbox-group">
+                <div class="checkbox-item">
+                    <input type="checkbox" id="fever" value="Yes">
+                    <label for="fever" style="margin:0">Fever [cite: 21]</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="cough" value="Yes">
+                    <label for="cough" style="margin:0">Cough [cite: 22]</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="fatigue" value="Yes">
+                    <label for="fatigue" style="margin:0">Fatigue [cite: 23]</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="breathing" value="Yes">
+                    <label for="breathing" style="margin:0">Diff. Breathing [cite: 31]</label>
+                </div>
+            </div>
+        </div>
+
+        <button type="button" onclick="runInference()">Diagnose</button>
+    </form>
+
+    <div id="result-area">
+        <h2>Diagnosis Results</h2>
+        <p>Sorted by Certainty Factor (CF)[cite: 123]:</p>
+        <div id="results-list"></div>
+    </div>
+</div>
+
+<script>
+    // --- PHASE 1 SIMULATION: KNOWLEDGE BASE ---
+    // In a real system, this is generated offline from the Kaggle dataset[cite: 52].
+    // Here we use hardcoded rules to simulate the structure described in[cite: 89].
+    const knowledgeBase = [
+        {
+            ruleId: 1,
+            hypothesis: "Influenza",
+            evidence: { "Fever": "Yes", "Cough": "Yes", "Fatigue": "Yes" },
+            cf: 0.8 // [cite: 83]
+        },
+        {
+            ruleId: 2,
+            hypothesis: "Common Cold",
+            evidence: { "Cough": "Yes", "Fever": "No" }, 
+            cf: 0.6
+        },
+        {
+            ruleId: 3,
+            hypothesis: "Pneumonia",
+            evidence: { "Difficulty Breathing": "Yes", "AgeCategory": "Senior", "Blood Pressure": "High" },
+            cf: 0.9 // Specific example rule style from PDF [cite: 81]
+        },
+        {
+            ruleId: 4,
+            hypothesis: "Bronchitis",
+            evidence: { "Cough": "Yes", "Difficulty Breathing": "Yes", "AgeCategory": "Adult" },
+            cf: 0.7
+        },
+        {
+            ruleId: 5,
+            hypothesis: "Hypertension Complication",
+            evidence: { "Blood Pressure": "High", "Cholesterol": "High", "AgeCategory": "Senior" },
+            cf: 0.85
+        }
+    ];
+
+
+    // --- PHASE 2: INFERENCE ENGINE LOGIC  ---
+
+    // Step 1.1: Age Discretization (Binning) 
+    function getAgeCategory(age) {
+        if (age <= 12) return "Child";
+        if (age <= 18) return "Adolescent";
+        if (age <= 59) return "Adult";
+        return "Senior";
+    }
+
+    // Step 2.4: Certainty Factor Combination Formula 
+    // Formula for positive CFs: CFcomb = CF1 + CF2 * (1 - CF1)
+    function combineCF(cfList) {
+        if (cfList.length === 0) return 0;
+        let cfNet = cfList[0];
+        
+        for (let i = 1; i < cfList.length; i++) {
+            let cfNext = cfList[i];
+            // Simplified implementation for positive CFs as per the primary formula line
+            cfNet = cfNet + cfNext * (1 - cfNet);
+        }
+        return parseFloat(cfNet.toFixed(2));
+    }
+
+    function runInference() {
+        // 1. Gather User Input 
+        const ageInput = parseInt(document.getElementById('age').value);
+        if (isNaN(ageInput)) {
+            alert("Please enter a valid age.");
+            return;
+        }
+
+        const userFacts = {
+            "AgeCategory": getAgeCategory(ageInput), 
+            "Gender": document.getElementById('gender').value,
+            "Blood Pressure": document.getElementById('bp').value,
+            "Cholesterol": document.getElementById('cholesterol').value,
+            "Fever": document.getElementById('fever').checked ? "Yes" : "No",
+            "Cough": document.getElementById('cough').checked ? "Yes" : "No",
+            "Fatigue": document.getElementById('fatigue').checked ? "Yes" : "No",
+            "Difficulty Breathing": document.getElementById('breathing').checked ? "Yes" : "No"
+        };
+
+        // 2. Forward Chaining 
+        // Find all activated rules where Evidence matches User Facts
+        let diseaseCFs = {}; // Store list of CFs per disease
+
+        knowledgeBase.forEach(rule => {
+            let match = true;
+            
+            for (let [feature, value] of Object.entries(rule.evidence)) {
+                if (userFacts[feature] !== value) {
+                    match = false;
+                    break;
+                }
+            }
+
+            if (match) {
+                if (!diseaseCFs[rule.hypothesis]) {
+                    diseaseCFs[rule.hypothesis] = [];
+                }
+                diseaseCFs[rule.hypothesis].push(rule.cf);
+            }
+        });
+
+        // 3. Calculate Final CF per Disease [cite: 107]
+        let finalResults = [];
+        for (let [disease, cfList] of Object.entries(diseaseCFs)) {
+            let netCF = combineCF(cfList);
+            finalResults.push({ disease: disease, cf: netCF });
+        }
+
+        // 4. Sort and Display Output [cite: 123]
+        finalResults.sort((a, b) => b.cf - a.cf);
+
+        const resultsContainer = document.getElementById('results-list');
+        resultsContainer.innerHTML = "";
+        document.getElementById('result-area').style.display = 'block';
+
+        if (finalResults.length === 0) {
+            resultsContainer.innerHTML = "<p>No specific disease matched the symptoms in the Knowledge Base.</p>";
+        } else {
+            finalResults.forEach(res => {
+                const div = document.createElement('div');
+                div.className = 'diagnosis-card';
+                div.innerHTML = `
+                    <strong>${res.disease}</strong>
+                    <span class="cf-score">Certainty: ${(res.cf * 100).toFixed(0)}% (CF: ${res.cf})</span>
+                    <br><small>Based on matching symptom rules</small>
+                `;
+                resultsContainer.appendChild(div);
+            });
+        }
+    }
+</script>
+
+</body>
+</html>
