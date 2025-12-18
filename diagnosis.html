@@ -174,6 +174,7 @@
     <div class="tabs">
         <button class="tab active" onclick="switchTab('physical')">🩺 Physical Health</button>
         <button class="tab mental" onclick="switchTab('mental')">🧠 Mental Health</button>
+        <button class="tab" onclick="displayPerformanceMetrics()" style="margin-left: auto; background: #27ae60; color: white; border-radius: 5px;">📊 View Performance Metrics</button>
     </div>
 
     <!-- PHYSICAL HEALTH TAB -->
@@ -230,6 +231,54 @@
                 <div class="checkbox-item">
                     <input type="checkbox" id="breathing" value="Yes">
                     <label for="breathing" style="margin:0">Diff. Breathing </label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="headache" value="Yes">
+                    <label for="headache" style="margin:0">Headache</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="chest-pain" value="Yes">
+                    <label for="chest-pain" style="margin:0">Chest Pain</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="body-aches" value="Yes">
+                    <label for="body-aches" style="margin:0">Body Aches</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="nausea" value="Yes">
+                    <label for="nausea" style="margin:0">Nausea</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="dizziness" value="Yes">
+                    <label for="dizziness" style="margin:0">Dizziness</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="sore-throat" value="Yes">
+                    <label for="sore-throat" style="margin:0">Sore Throat</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="runny-nose" value="Yes">
+                    <label for="runny-nose" style="margin:0">Runny Nose</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="abdominal-pain" value="Yes">
+                    <label for="abdominal-pain" style="margin:0">Abdominal Pain</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="sweating" value="Yes">
+                    <label for="sweating" style="margin:0">Sweating</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="chills" value="Yes">
+                    <label for="chills" style="margin:0">Chills</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="loss-appetite" value="Yes">
+                    <label for="loss-appetite" style="margin:0">Loss of Appetite</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="weight-loss" value="Yes">
+                    <label for="weight-loss" style="margin:0">Weight Loss</label>
                 </div>
             </div>
         </div>
@@ -336,6 +385,117 @@
 </div>
 
 <script>
+    // ============= PERFORMANCE TRACKING SYSTEM =============
+    const performanceMetrics = {
+        totalDiagnoses: 0,
+        physicalDiagnoses: 0,
+        mentalDiagnoses: 0,
+        diagnosisTimes: [],
+        rulesFireHistory: [],
+        symptomCombinations: [],
+        cfScores: [],
+        diagnosisDistribution: {},
+        // Accuracy metrics
+        truePositives: 0,
+        falsePositives: 0,
+        trueNegatives: 0,
+        falseNegatives: 0,
+        predictions: [], // {predicted: [], actual: "Disease Name", type: "physical|mental"}
+        validatedDiagnoses: 0
+    };
+
+    function recordMetrics(type, startTime, endTime, rulesFired, results, symptoms) {
+        const diagnosisTime = endTime - startTime;
+        
+        performanceMetrics.totalDiagnoses++;
+        if (type === 'physical') performanceMetrics.physicalDiagnoses++;
+        if (type === 'mental') performanceMetrics.mentalDiagnoses++;
+        
+        performanceMetrics.diagnosisTimes.push(diagnosisTime);
+        performanceMetrics.rulesFireHistory.push(rulesFired);
+        performanceMetrics.symptomCombinations.push(symptoms);
+        
+        results.forEach(res => {
+            performanceMetrics.cfScores.push(res.cf);
+            if (!performanceMetrics.diagnosisDistribution[res.disease || res.disorder]) {
+                performanceMetrics.diagnosisDistribution[res.disease || res.disorder] = 0;
+            }
+            performanceMetrics.diagnosisDistribution[res.disease || res.disorder]++;
+        });
+    }
+
+    function calculatePerformanceStats() {
+        const avgTime = performanceMetrics.diagnosisTimes.reduce((a,b) => a+b, 0) / performanceMetrics.diagnosisTimes.length || 0;
+        const avgRulesFired = performanceMetrics.rulesFireHistory.reduce((a,b) => a+b, 0) / performanceMetrics.rulesFireHistory.length || 0;
+        const avgCF = performanceMetrics.cfScores.reduce((a,b) => a+b, 0) / performanceMetrics.cfScores.length || 0;
+        
+        // Calculate Precision, Recall, Accuracy, F1-Score
+        const tp = performanceMetrics.truePositives;
+        const fp = performanceMetrics.falsePositives;
+        const tn = performanceMetrics.trueNegatives;
+        const fn = performanceMetrics.falseNegatives;
+        
+        const precision = (tp + fp) > 0 ? (tp / (tp + fp)) : 0;
+        const recall = (tp + fn) > 0 ? (tp / (tp + fn)) : 0;
+        const accuracy = (tp + tn + fp + fn) > 0 ? ((tp + tn) / (tp + tn + fp + fn)) : 0;
+        const f1Score = (precision + recall) > 0 ? (2 * precision * recall) / (precision + recall) : 0;
+        
+        return {
+            totalDiagnoses: performanceMetrics.totalDiagnoses,
+            physicalDiagnoses: performanceMetrics.physicalDiagnoses,
+            mentalDiagnoses: performanceMetrics.mentalDiagnoses,
+            validatedDiagnoses: performanceMetrics.validatedDiagnoses,
+            avgDiagnosisTime: avgTime.toFixed(2) + ' ms',
+            avgRulesFired: avgRulesFired.toFixed(1),
+            avgCertaintyFactor: avgCF.toFixed(2),
+            mostCommonDiagnosis: Object.entries(performanceMetrics.diagnosisDistribution)
+                .sort((a,b) => b[1] - a[1])[0]?.[0] || 'N/A',
+            knowledgeBaseCoverage: {
+                physical: `${knowledgeBase.length} rules`,
+                mental: `${mentalKnowledgeBase.length} rules`
+            },
+            // Accuracy Metrics
+            precision: (precision * 100).toFixed(2) + '%',
+            recall: (recall * 100).toFixed(2) + '%',
+            accuracy: (accuracy * 100).toFixed(2) + '%',
+            f1Score: f1Score.toFixed(3),
+            confusionMatrix: { tp, fp, tn, fn }
+        };
+    }
+
+    function displayPerformanceMetrics() {
+        const stats = calculatePerformanceStats();
+        console.log('=== SYSTEM PERFORMANCE METRICS ===');
+        console.log('Total Diagnoses:', stats.totalDiagnoses);
+        console.log('Physical Health Diagnoses:', stats.physicalDiagnoses);
+        console.log('Mental Health Diagnoses:', stats.mentalDiagnoses);
+        console.log('Validated Diagnoses:', stats.validatedDiagnoses);
+        console.log('Average Diagnosis Time:', stats.avgDiagnosisTime);
+        console.log('Average Rules Fired:', stats.avgRulesFired);
+        console.log('Average Certainty Factor:', stats.avgCertaintyFactor);
+        console.log('Most Common Diagnosis:', stats.mostCommonDiagnosis);
+        console.log('Knowledge Base Coverage:', stats.knowledgeBaseCoverage);
+        console.log('\n=== ACCURACY METRICS ===');
+        console.log('Precision:', stats.precision);
+        console.log('Recall:', stats.recall);
+        console.log('Accuracy:', stats.accuracy);
+        console.log('F1-Score:', stats.f1Score);
+        console.log('Confusion Matrix:', stats.confusionMatrix);
+        
+        alert(`📊 Performance Metrics\n\n` +
+              `Total Diagnoses: ${stats.totalDiagnoses}\n` +
+              `Validated: ${stats.validatedDiagnoses}\n` +
+              `Avg Time: ${stats.avgDiagnosisTime}\n` +
+              `Avg Rules Fired: ${stats.avgRulesFired}\n\n` +
+              `🎯 Accuracy Metrics:\n` +
+              `Precision: ${stats.precision}\n` +
+              `Recall: ${stats.recall}\n` +
+              `Accuracy: ${stats.accuracy}\n` +
+              `F1-Score: ${stats.f1Score}\n\n` +
+              `Check console for detailed metrics.`);
+        
+        return stats;
+    }
     
     function switchTab(tab) {
       
@@ -502,6 +662,8 @@
     }
 
     function runInference() {
+        const startTime = performance.now(); // Start performance tracking
+        
         // 1. Gather User Input 
         const ageInput = parseInt(document.getElementById('age').value);
         if (isNaN(ageInput)) {
@@ -517,12 +679,28 @@
             "Fever": document.getElementById('fever').checked ? "Yes" : "No",
             "Cough": document.getElementById('cough').checked ? "Yes" : "No",
             "Fatigue": document.getElementById('fatigue').checked ? "Yes" : "No",
-            "Difficulty Breathing": document.getElementById('breathing').checked ? "Yes" : "No"
+            "Difficulty Breathing": document.getElementById('breathing').checked ? "Yes" : "No",
+            "Headache": document.getElementById('headache').checked ? "Yes" : "No",
+            "Chest Pain": document.getElementById('chest-pain').checked ? "Yes" : "No",
+            "Body Aches": document.getElementById('body-aches').checked ? "Yes" : "No",
+            "Nausea": document.getElementById('nausea').checked ? "Yes" : "No",
+            "Dizziness": document.getElementById('dizziness').checked ? "Yes" : "No",
+            "Sore Throat": document.getElementById('sore-throat').checked ? "Yes" : "No",
+            "Runny Nose": document.getElementById('runny-nose').checked ? "Yes" : "No",
+            "Abdominal Pain": document.getElementById('abdominal-pain').checked ? "Yes" : "No",
+            "Sweating": document.getElementById('sweating').checked ? "Yes" : "No",
+            "Chills": document.getElementById('chills').checked ? "Yes" : "No",
+            "Loss of Appetite": document.getElementById('loss-appetite').checked ? "Yes" : "No",
+            "Weight Loss": document.getElementById('weight-loss').checked ? "Yes" : "No"
         };
+
+        // Count symptoms
+        const symptomCount = Object.values(userFacts).filter(v => v === "Yes").length;
 
         // 2. Forward Chaining 
         // Find all activated rules where Evidence matches User Facts
         let diseaseCFs = {}; // Store list of CFs per disease
+        let rulesFired = 0; // Track how many rules matched
 
         knowledgeBase.forEach(rule => {
             let match = true;
@@ -535,6 +713,7 @@
             }
 
             if (match) {
+                rulesFired++; // Increment when a rule fires
                 if (!diseaseCFs[rule.hypothesis]) {
                     diseaseCFs[rule.hypothesis] = [];
                 }
@@ -552,6 +731,11 @@
         // 4. Sort and Display Output [cite: 123]
         finalResults.sort((a, b) => b.cf - a.cf); 
 
+        const endTime = performance.now(); // End performance tracking
+        
+        // Record metrics
+        recordMetrics('physical', startTime, endTime, rulesFired, finalResults, symptomCount);
+
         const resultsContainer = document.getElementById('results-list');
         resultsContainer.innerHTML = "";
         document.getElementById('result-area').style.display = 'block';
@@ -559,6 +743,20 @@
         if (finalResults.length === 0) {
             resultsContainer.innerHTML = "<p>No specific disease matched the symptoms in the Knowledge Base.</p>";
         } else {
+            // Add performance stats to results
+            resultsContainer.innerHTML = `
+                <div style="background: #e3f2fd; padding: 10px; border-radius: 5px; margin-bottom: 15px; font-size: 0.9em;">
+                    <strong>📊 Diagnosis Metrics:</strong> 
+                    ${rulesFired} rules fired | 
+                    ${symptomCount} symptoms analyzed | 
+                    ${(endTime - startTime).toFixed(2)}ms processing time | 
+                    ${finalResults.length} possible diagnoses found
+                </div>
+            `;
+            
+            // Store for validation
+            window.lastDiagnosis = { results: finalResults, type: 'physical' };
+            
             finalResults.forEach(res => {
                 const div = document.createElement('div');
                 div.className = 'diagnosis-card';
@@ -569,7 +767,69 @@
                 `;
                 resultsContainer.appendChild(div);
             });
+            
+            // Add validation section
+            const validationDiv = document.createElement('div');
+            validationDiv.style.cssText = 'margin-top: 20px; padding: 15px; background: #fff3cd; border-radius: 5px; border-left: 4px solid #ffc107;';
+            validationDiv.innerHTML = `
+                <strong>✅ Validate Diagnosis (Optional - for accuracy metrics):</strong>
+                <p style="margin: 10px 0; font-size: 0.9em;">What is the actual/confirmed diagnosis?</p>
+                <select id="actual-diagnosis" style="width: 100%; padding: 8px; margin-bottom: 10px;">
+                    <option value="">-- Select Actual Diagnosis --</option>
+                    ${finalResults.map(r => `<option value="${r.disease}">${r.disease}</option>`).join('')}
+                    <option value="other">Other (Not in list)</option>
+                </select>
+                <button onclick="validateDiagnosis('physical')" style="width: 100%; padding: 10px; background: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer;">Submit Validation</button>
+            `;
+            resultsContainer.appendChild(validationDiv);
         }
+    }
+    
+    function validateDiagnosis(type) {
+        const actualDiagnosis = document.getElementById('actual-diagnosis').value;
+        if (!actualDiagnosis) {
+            alert('Please select the actual diagnosis');
+            return;
+        }
+        
+        const lastDiag = window.lastDiagnosis;
+        if (!lastDiag || !lastDiag.results) {
+            alert('No diagnosis to validate');
+            return;
+        }
+        
+        const predictedDiseases = lastDiag.results.map(r => r.disease || r.disorder);
+        const topPrediction = predictedDiseases[0]; // Highest CF
+        
+        // Calculate TP, FP, TN, FN
+        if (actualDiagnosis === 'other') {
+            // System predicted something, but actual is not in list -> False Positive
+            performanceMetrics.falsePositives++;
+        } else if (predictedDiseases.includes(actualDiagnosis)) {
+            // System correctly identified the disease -> True Positive
+            performanceMetrics.truePositives++;
+            if (topPrediction === actualDiagnosis) {
+                console.log('✓ Top prediction matches actual diagnosis!');
+            }
+        } else {
+            // System didn't predict the actual disease -> False Negative
+            performanceMetrics.falseNegatives++;
+        }
+        
+        // Store prediction for analysis
+        performanceMetrics.predictions.push({
+            predicted: predictedDiseases,
+            actual: actualDiagnosis,
+            type: type,
+            topMatch: topPrediction === actualDiagnosis
+        });
+        
+        performanceMetrics.validatedDiagnoses++;
+        
+        alert('✅ Diagnosis validated! Accuracy metrics updated.\nCheck Performance Metrics to see updated stats.');
+        
+        // Hide validation section after submission
+        document.getElementById('actual-diagnosis').parentElement.style.display = 'none';
     }
 
     // ============= MENTAL HEALTH DIAGNOSIS =============
@@ -712,6 +972,8 @@
     ];
 
     function runMentalInference() {
+        const startTime = performance.now(); // Start performance tracking
+        
         // 1. Gather User Input
         const ageInput = parseInt(document.getElementById('mental-age').value);
         if (isNaN(ageInput)) {
@@ -738,9 +1000,13 @@
        
         };
 
+        // Count symptoms
+        const symptomCount = Object.values(mentalFacts).filter(v => v === "Yes").length;
+
         // 2. Forward Chaining
         let diseaseCFs = {};
         let diseaseSeverity = {};
+        let rulesFired = 0; // Track how many rules matched
 
         mentalKnowledgeBase.forEach(rule => {
             let match = true;
@@ -752,6 +1018,7 @@
             }
 
             if (match) {
+                rulesFired++; // Increment when a rule fires
                 if (!diseaseCFs[rule.hypothesis]) {
                     diseaseCFs[rule.hypothesis] = [];
                     diseaseSeverity[rule.hypothesis] = rule.severity;
@@ -774,6 +1041,11 @@
         // 4. Sort and Display
         finalResults.sort((a, b) => b.cf - a.cf);
 
+        const endTime = performance.now(); // End performance tracking
+        
+        // Record metrics
+        recordMetrics('mental', startTime, endTime, rulesFired, finalResults, symptomCount);
+
         const resultsContainer = document.getElementById('mental-results-list');
         resultsContainer.innerHTML = "";
         document.getElementById('mental-result-area').style.display = 'block';
@@ -785,7 +1057,17 @@
                 <div style="background: #fff9c4; padding: 15px; border-radius: 5px; margin-bottom: 15px; border-left: 4px solid #fbc02d;">
                     <strong>⚠️ Important Notice:</strong> This is a screening tool only. Please consult a licensed mental health professional for proper diagnosis and treatment.
                 </div>
+                <div style="background: #e1bee7; padding: 10px; border-radius: 5px; margin-bottom: 15px; font-size: 0.9em;">
+                    <strong>📊 Assessment Metrics:</strong> 
+                    ${rulesFired} rules fired | 
+                    ${symptomCount} symptoms analyzed | 
+                    ${(endTime - startTime).toFixed(2)}ms processing time | 
+                    ${finalResults.length} possible conditions identified
+                </div>
             `;
+            
+            // Store for validation
+            window.lastDiagnosis = { results: finalResults, type: 'mental' };
             
             finalResults.forEach(res => {
                 const div = document.createElement('div');
@@ -799,6 +1081,21 @@
                 `;
                 resultsContainer.appendChild(div);
             });
+            
+            // Add validation section for mental health
+            const validationDiv = document.createElement('div');
+            validationDiv.style.cssText = 'margin-top: 20px; padding: 15px; background: #fff3cd; border-radius: 5px; border-left: 4px solid #ffc107;';
+            validationDiv.innerHTML = `
+                <strong>✅ Validate Assessment:</strong>
+                <p style="margin: 10px 0; font-size: 0.9em;">What is the actual/confirmed diagnosis?</p>
+                <select id="actual-diagnosis" style="width: 100%; padding: 8px; margin-bottom: 10px;">
+                    <option value="">-- Select Actual Diagnosis --</option>
+                    ${finalResults.map(r => `<option value="${r.disorder}">${r.disorder}</option>`).join('')}
+                    <option value="other">Other (Not in list)</option>
+                </select>
+                <button onclick="validateDiagnosis('mental')" style="width: 100%; padding: 10px; background: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer;">Submit Validation</button>
+            `;
+            resultsContainer.appendChild(validationDiv);
         }
     }
 </script>
